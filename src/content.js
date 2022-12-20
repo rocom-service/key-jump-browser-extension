@@ -373,132 +373,44 @@ function findHints() {
   let hintId
   let lookupTable
 
-  if (state.options.useLettersForHints) {
-    state.rngSeed = state.initialRngSeed
-
-    lookupTable = generateAlphabetLookupTable(state.options.hintAlphabet)
-    hintId = lookupTable.get(0).repeat(2)
-  } else {
-    hintId = 1
-    lookupTable = null
-  }
-
+  hintId = 1
+  lookupTable = null
   state.hints = []
 
   for (const el of state.targetEls) {
     // generate IDs for all target elements, even non-visible ones (avoids changing hints when scrolling)
-    if (state.options.useLettersForHints) {
-      // The alphanumeric IDs should satisfy the following properties:
-      // 1. They have to be unique.
-      // 2. Letters that occur earlier in the alphabet string should occur more often
-      //    (The user can then order the keys by how easily they are reachable).
-      // 3. Adjacent IDs should not start with the same letter (filter quickly)
-      // 4. IDs should have at least two letters (mostly aesthetic, but saves time on typos)
-      //
-      // To satisfy the first 2 properties, we iterate through all words over the
-      // hint alphabet in lexicographic order, but randomly skip words
-      // with probability depending on the position of their letters in the alphabet
-      // string. The third one we satisfy by having the least-significant letter at
-      // the beginning.
-      hintId = getNextId(hintId, lookupTable)
-    } else {
-      hintId++
-    }
+    hintId++
 
     // if the element is visible, push it onto the render stack
     if (isElementVisible(el)) {
-      state.hints.push({
-        id: String(hintId),
-        targetEl: el,
-      })
+        if (state.options.useLettersForHints) {
+          state.hints.push({
+            id: getNextId(hintId, state.options.hintAlphabet),
+            targetEl: el,
+          })
+        } else {
+          state.hints.push({
+            id: String(hintId),
+            targetEl: el,
+          })
+        }
     }
   }
 
   state.matches = state.hints
 }
 
-function getNextId(id, lookupTable) {
-  // implements the algorithm described above
+function getNextId(id, hintAlphabet) {
+    let result = ''
+    let number = id
 
-  const skipBias = 1.5
-  const skipProb = 0.2
-
-  let result = ''
-  let carry = true
-
-  // generally "increments" the string by one, where the least significant letter is at position 0
-  for (let i = 0; i < id.length; i++) {
-    let chr = id.charAt(i)
-    let ord = lookupTable.get(chr)
-    let skip
-
-    // with a small probability we skip the current index completely to bring more
-    // variety to the more significant positions of the ID. Don't make the ID longer
-    // than it has to be, though.
-    if (random() < skipProb && i < id.length - 1) {
-      result = result + chr
-      continue
+    while (number > 0) {
+        let remainder = number % hintAlphabet.length
+        result = result + hintAlphabet[remainder]
+        number = Math.floor(number / hintAlphabet.length)
     }
 
-    do {
-      if (lookupTable.has(ord + 1)) {
-        ord = ord + 1
-        carry = false
-      } else {
-        ord = 0
-      }
-
-      chr = lookupTable.get(ord)
-
-      // the higher in the alphabet the new letter is, the higher the chance that we skip it
-      skip = Math.floor(random() * lookupTable.get('length') * skipBias) < ord
-    } while (skip)
-
-    result = result + chr
-
-    if (!carry) {
-      return result + id.substr(i + 1)
-    }
-  }
-
-  if (carry) {
-    result = lookupTable.get(0).repeat(id.length + 1)
-  }
-
-  return result
-}
-
-function shuffle(input) {
-  for (let i = input.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1))
-    const temp = input[i]
-    input[i] = input[j]
-    input[j] = temp
-  }
-
-  return input
-}
-
-function random() {
-  // small seeded random number generator, not exactly uniform but good enough for
-  // our purposes.
-  const x = Math.sin(state.rngSeed++) * 10000
-  return x - Math.floor(x)
-}
-
-function generateAlphabetLookupTable(alphabet) {
-  // Generates a lookup table that maps symbols to their position in the hint alphabet
-  // and vice versa. Speeds up hint rendering.
-  const table = new Map()
-  const noDuplicates = [...new Set(alphabet)]
-  noDuplicates.forEach((elem, idx) => {
-    table.set(elem, idx)
-    table.set(idx, elem)
-  })
-
-  table.set('length', noDuplicates.length)
-
-  return table
+    return result
 }
 
 function renderHints() {
@@ -534,7 +446,7 @@ function renderHints() {
     )
     const left = Math.max(
       0,
-      Math.round(targetPos.left - cache.hintWidth - hintCharWidth - 2),
+      targetPos.left,
     )
 
     hint.hintEl.style.top = top + 'px'
