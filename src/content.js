@@ -233,6 +233,7 @@ function triggerMatchingHint() {
       console.log(`@@@ send message`)
       _browser.runtime.sendMessage({openUrlInNewTab: targetEl.href})
     } else {
+      targetEl.focus()
       const mouseEvent = new MouseEvent('click', {
         view: window,
         bubbles: true,
