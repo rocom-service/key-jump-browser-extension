@@ -255,7 +255,7 @@ function activateHintMode() {
       // Don't search for 'a' to avoid finding elements used only for fragment
       // links (jump to a point in a page) which sometimes mess up the hint
       // numbering or it looks like they can be clicked when they can't.
-      'a[href]',
+      'a[href]:not([id=video-title-link],[id=video-title])', // disable for youtube
       'input:not([disabled]):not([type=hidden])',
       'textarea:not([disabled])',
       'select:not([disabled])',
