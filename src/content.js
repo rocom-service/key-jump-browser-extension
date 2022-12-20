@@ -379,11 +379,10 @@ function findHints() {
   state.hints = []
 
   for (const el of state.targetEls) {
-    // generate IDs for all target elements, even non-visible ones (avoids changing hints when scrolling)
-    hintId++
-
     // if the element is visible, push it onto the render stack
     if (isElementVisible(el)) {
+        hintId++
+
         if (state.options.useLettersForHints) {
           state.hints.push({
             id: getNextId(hintId, state.options.hintAlphabet),
