@@ -239,8 +239,11 @@ function triggerMatchingHint() {
         bubbles: true,
         cancelable: true,
       })
+      let rect = targetEl.getBoundingClientRect()
+      let x = rect.left + rect.width / 2
+      let y = rect.top + rect.height / 2
 
-      targetEl.dispatchEvent(mouseEvent)
+      document.elementFromPoint(x, y).dispatchEvent(mouseEvent)
     }
   }
 
@@ -270,6 +273,9 @@ function activateHintMode() {
       '.tag-box',
       '.tag-delete',
       '.work-item-form-assignedTo',
+      // Outlook Web
+      'div[data-convid]',
+      'div[role=treeitem]',
     ].join(','),
   )
 
