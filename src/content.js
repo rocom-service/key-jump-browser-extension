@@ -265,15 +265,14 @@ function activateHintMode() {
       // GWT Anchor widget class
       // http://www.gwtproject.org/javadoc/latest/com/google/gwt/user/client/ui/Anchor.html
       '.gwt-Anchor',
+      // Azure DevOps classer
+      '.page-button',
+      '.tag-box',
+      '.tag-delete',
+      '.work-item-form-assignedTo',
     ].join(','),
   )
 
-  if (state.options.useLettersForHints) {
-    // when using alphanumeric hints, we use a seeded random number generator
-    // to generate random looking hints that don't change when scrolling
-    // (only when toggling hint mode)
-    state.initialRngSeed = Math.floor(+Date.now() % 100000)
-  }
 
   findHints()
 
@@ -384,16 +383,19 @@ function findHints() {
         hintId++
 
         if (state.options.useLettersForHints) {
-          state.hints.push({
+          var hint = {
             id: getNextId(hintId, state.options.hintAlphabet),
             targetEl: el,
-          })
+          }
         } else {
-          state.hints.push({
+          var hint = {
             id: String(hintId),
             targetEl: el,
-          })
+          }
         }
+
+        console.log(hint)
+        state.hints.push(hint)
     }
   }
 
@@ -506,6 +508,24 @@ function delayedCleanupFactory() {
 
 function isElementVisible(el) {
   let rect = el.getBoundingClientRect()
+
+  // Only check elements that can be clicked
+  // var clickable = false
+  // for (var x = rect.left; x <= rect.right; x += 8) {
+  //     for (var y = rect.top; y <= rect.bottom; y += 8) {
+  //         if (document.elementFromPoint(x, y) === el) {
+  //             clickable = true
+  //             break
+  //         }
+  //     }
+  //     if (clickable) {
+  //         break
+  //     }
+  // }
+
+  // if (clickable == false) {
+  //     return false
+  // }
 
   // Only check if the initial element is in the viewport since it could be
   // positioned outside its parent elements which themselves could be outside
