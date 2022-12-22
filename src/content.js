@@ -253,8 +253,7 @@ function triggerMatchingHint() {
 }
 
 function activateHintMode() {
-  state.targetEls = state.rootEl.querySelectorAll(
-    [
+  let selector = [
       // Don't search for 'a' to avoid finding elements used only for fragment
       // links (jump to a point in a page) which sometimes mess up the hint
       // numbering or it looks like they can be clicked when they can't.
@@ -268,17 +267,30 @@ function activateHintMode() {
       // GWT Anchor widget class
       // http://www.gwtproject.org/javadoc/latest/com/google/gwt/user/client/ui/Anchor.html
       '.gwt-Anchor',
-      // Azure DevOps classer
+    ]
+
+  if (state.rootEl.baseURI.startsWith('https://dev.azure.com')) {
+    selector = selector.concat([
       '.page-button',
       '.tag-box',
       '.tag-delete',
       '.work-item-form-assignedTo',
-      // Outlook Web
+    ])
+  } else if (state.rootEl.baseURI.startsWith('https://owa.')) {
+    selector = selector.concat([
       'div[data-convid]',
       'div[role=treeitem]',
-    ].join(','),
-  )
+    ])
+  } else if (state.rootEl.baseURI.startsWith('https://nickcoutsos.github.io/')) {
+    selector = selector.concat([
+      '.styles_behaviour-binding__S-U9A',
+      '.styles_params__9PlN-',
+      '.fa',
+      'li[class]',
+    ])
+  }
 
+  state.targetEls = state.rootEl.querySelectorAll(selector.join(','))
 
   findHints()
 
