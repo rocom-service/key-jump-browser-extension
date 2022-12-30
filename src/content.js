@@ -424,13 +424,14 @@ function getNextId(id, hintAlphabet) {
     let result = ''
     let number = id
 
-    while (number > 0) {
+    do
+    {
         let remainder = number % hintAlphabet.length
         result = result + hintAlphabet[remainder]
         number = Math.floor(number / hintAlphabet.length)
-    }
+    } while (number > 0)
 
-    return result
+    return result.split("").reverse().join("")
 }
 
 function renderHints() {
