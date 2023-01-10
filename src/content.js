@@ -110,9 +110,9 @@ function handleKeydown(event) {
         ? /[0-9A-Za-zÀ-ÖØ-öø-ÿ]/
         : /[0-9]/
 
-      if (event.key.match(allowedQueryCharacters)) {
-        handleQueryKey(event)
-      }
+        if (event.key.match(allowedQueryCharacters)) {
+          handleQueryKey(event)
+        }
     }
   }
 }
@@ -254,20 +254,21 @@ function triggerMatchingHint() {
 
 function activateHintMode() {
   let selector = [
-      // Don't search for 'a' to avoid finding elements used only for fragment
-      // links (jump to a point in a page) which sometimes mess up the hint
-      // numbering or it looks like they can be clicked when they can't.
-      'a[href]:not([id=video-title-link],[id=video-title])', // disable for youtube
-      'input:not([disabled]):not([type=hidden])',
-      'textarea:not([disabled])',
-      'select:not([disabled])',
-      'button:not([disabled])',
-      '[contenteditable]:not([contenteditable=false]):not([disabled])',
-      '[ng-click]:not([disabled])',
-      // GWT Anchor widget class
-      // http://www.gwtproject.org/javadoc/latest/com/google/gwt/user/client/ui/Anchor.html
-      '.gwt-Anchor',
-    ]
+    // Don't search for 'a' to avoid finding elements used only for fragment
+    // links (jump to a point in a page) which sometimes mess up the hint
+    // numbering or it looks like they can be clicked when they can't.
+    'a[href]:not([id=video-title-link],[id=video-title])', // disable for youtube
+    'input:not([disabled]):not([type=hidden])',
+    'textarea:not([disabled])',
+    'select:not([disabled])',
+    'button:not([disabled])',
+    '[contenteditable]:not([contenteditable=false]):not([disabled])',
+    '[ng-click]:not([disabled])',
+    // GWT Anchor widget class
+    // http://www.gwtproject.org/javadoc/latest/com/google/gwt/user/client/ui/Anchor.html
+    '.gwt-Anchor',
+    'span[role=button]',
+  ]
 
   if (state.rootEl.baseURI.startsWith('https://dev.azure.com')) {
     selector = selector.concat([
@@ -398,22 +399,22 @@ function findHints() {
   for (const el of state.targetEls) {
     // if the element is visible, push it onto the render stack
     if (isElementVisible(el)) {
-        hintId++
+      hintId++
 
-        if (state.options.useLettersForHints) {
-          var hint = {
-            id: getNextId(hintId, state.options.hintAlphabet),
-            targetEl: el,
-          }
-        } else {
-          var hint = {
-            id: String(hintId),
-            targetEl: el,
-          }
+      if (state.options.useLettersForHints) {
+        var hint = {
+          id: getNextId(hintId, state.options.hintAlphabet),
+          targetEl: el,
         }
+      } else {
+        var hint = {
+          id: String(hintId),
+          targetEl: el,
+        }
+      }
 
-        console.log(hint)
-        state.hints.push(hint)
+      console.log(hint)
+      state.hints.push(hint)
     }
   }
 
@@ -421,17 +422,17 @@ function findHints() {
 }
 
 function getNextId(id, hintAlphabet) {
-    let result = ''
-    let number = id
+  let result = ''
+  let number = id
 
-    do
-    {
-        let remainder = number % hintAlphabet.length
-        result = result + hintAlphabet[remainder]
-        number = Math.floor(number / hintAlphabet.length)
-    } while (number > 0)
+  do
+  {
+    let remainder = number % hintAlphabet.length
+    result = result + hintAlphabet[remainder]
+    number = Math.floor(number / hintAlphabet.length)
+  } while (number > 0)
 
-    return result.split("").reverse().join("")
+  return result.split("").reverse().join("")
 }
 
 function renderHints() {
