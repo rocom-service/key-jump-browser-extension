@@ -223,27 +223,43 @@ function triggerMatchingHint() {
   if (shouldElementBeFocused(targetEl)) {
     targetEl.focus()
   } else {
-    if (
-      openInNewTab &&
-      // Is a link.
-      targetEl.tagName.toLowerCase() === 'a' &&
-      // Has a href value.
-      targetEl.getAttribute('href')
-    ) {
+    if (openInNewTab && targetEl.tagName.toLowerCase() === 'a' && targetEl.getAttribute('href')) {
       console.log(`@@@ send message`)
       _browser.runtime.sendMessage({openUrlInNewTab: targetEl.href})
     } else {
       targetEl.focus()
-      const mouseEvent = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-      })
       let rect = targetEl.getBoundingClientRect()
       let x = rect.left + rect.width / 2
       let y = rect.top + rect.height / 2
 
-      document.elementFromPoint(x, y).dispatchEvent(mouseEvent)
+      let el = document.elementFromPoint(x, y)
+      if (Array.from(el.getElementsByTagName('*')).includes(targetEl)) {
+        el = targetEl
+      }
+
+      el.dispatchEvent(new MouseEvent('mouseover', {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+      }))
+
+      el.dispatchEvent(new MouseEvent('mousedown', {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+      }))
+      el.dispatchEvent(new MouseEvent('mouseup', {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+      }))
+
+      el.dispatchEvent(new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+      }))
+
     }
   }
 
@@ -267,7 +283,6 @@ function activateHintMode() {
     // GWT Anchor widget class
     // http://www.gwtproject.org/javadoc/latest/com/google/gwt/user/client/ui/Anchor.html
     '.gwt-Anchor',
-    'span[role=button]',
   ]
 
   if (state.rootEl.baseURI.startsWith('https://dev.azure.com')) {
@@ -276,11 +291,17 @@ function activateHintMode() {
       '.tag-box',
       '.tag-delete',
       '.work-item-form-assignedTo',
+      '.clickable-title-link',
+      'div.title > span',     // titles in Taskboard view
+      '.wit-ui-control',      // fields in Taskboard view
+      'div[role=tab]',        // tabs in workitems
+      'span[role=button]',    // attachments in workitems
     ])
   } else if (state.rootEl.baseURI.startsWith('https://owa.')) {
     selector = selector.concat([
       'div[data-convid]',
       'div[role=treeitem]',
+      //'button[title=löschen]',
     ])
   } else if (state.rootEl.baseURI.startsWith('https://nickcoutsos.github.io/')) {
     selector = selector.concat([
